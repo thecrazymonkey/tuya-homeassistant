@@ -22,7 +22,7 @@ switch:
     host: //ip of device
     local_key: //localKey
     device_id: //devId
-    id: //switch id. leave blank if only one switch
+    id: //switch id. Remove line if only one switch
 ```
 
 Example:
@@ -33,5 +33,5 @@ switch:
     host: xxx.xxx.xxx.xxx
     local_key: xxxxxxxxxxxxxxxx
     device_id: xxxxxxxxxxxxxxxxxxxx
-    id: 1
+    id: 3
 ```
