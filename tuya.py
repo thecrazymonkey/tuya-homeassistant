@@ -8,6 +8,8 @@ import voluptuous as vol
 from homeassistant.components.switch import SwitchDevice, PLATFORM_SCHEMA
 from homeassistant.const import (CONF_NAME, CONF_HOST, CONF_ID)
 import homeassistant.helpers.config_validation as cv
+from time import time
+from threading import Lock
 
 REQUIREMENTS = ['pytuya==6.0']
 
@@ -30,15 +32,54 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     import pytuya
 
     add_devices([TuyaDevice(
-        pytuya.OutletDevice(
-            config.get(CONF_DEVICE_ID),
-            config.get(CONF_HOST),
-            config.get(CONF_LOCAL_KEY),
+        TuyaCache(
+            pytuya.OutletDevice(
+                config.get(CONF_DEVICE_ID),
+                config.get(CONF_HOST),
+                config.get(CONF_LOCAL_KEY),
+            )
         ),
         config.get(CONF_NAME),
         config.get(CONF_ID)
     )])
 
+
+class TuyaCache:
+    """Cache wrapper for pytuya.OutletDevice"""
+
+    def __init__(self, device):
+        """Initialize the cache."""
+        self._cached_status = ''
+        self._cached_status_time = 0
+        self._device = device
+        self._lock = Lock()
+
+    def __get_status(self):
+        for i in range(3):
+            try:
+                status = self._device.status()
+                return status
+            except ConnectionError:
+                if i+1 == 3:
+                    raise ConnectionError("Failed to update status.")
+
+    def set_status(self, state, switchid):
+        """Change the Tuya switch status and clear the cache."""
+        self._cached_status = ''
+        self._cached_status_time = 0
+        return self._device.set_status(state, switchid)
+
+    def status(self):
+        """Get state of Tuya switch and cache the results."""
+        self._lock.acquire()
+        try:
+            now = time()
+            if not self._cached_status or now - self._cached_status_time > 20:
+                self._cached_status = self.__get_status()
+                self._cached_status_time = time()
+            return self._cached_status
+        finally:
+            self._lock.release()
 
 class TuyaDevice(SwitchDevice):
     """Representation of a Tuya switch."""
@@ -70,14 +111,5 @@ class TuyaDevice(SwitchDevice):
 
     def update(self):
         """Get state of Tuya switch."""
-        success = False
-        for i in range(3):
-            if success is False:
-                try:
-                    status = self._device.status()
-                    self._state = status['dps'][self._switchid]
-                    success = True
-                except ConnectionError:
-                    if i+1 == 3:
-                        success = False
-                        raise ConnectionError("Failed to update status.")
+        status = self._device.status()
+        self._state = status['dps'][self._switchid]
