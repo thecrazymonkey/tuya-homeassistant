@@ -35,3 +35,25 @@ switch:
     device_id: xxxxxxxxxxxxxxxxxxxx
     id: 3
 ```
+
+Multiple switches on a single device:
+```
+switch:
+  - platform: tuya
+    host: xxx.xxx.xxx.xxx
+    local_key: xxxxxxxxxxxxxxxx
+    device_id: xxxxxxxxxxxxxxxxxxxx
+    switches:
+      switch1:
+        friendly_name: Switch 1
+        id: 1
+      switch2:
+        friendly_name: Switch 2
+        id: 2
+      switch3:
+        friendly_name: Switch 3
+        id: 3
+      switch4:
+        friendly_name: Switch 4
+        id: 4
+```
