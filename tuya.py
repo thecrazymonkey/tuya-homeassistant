@@ -25,7 +25,7 @@ SWITCH_SCHEMA = vol.Schema({
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_NAME): cv.string,
-    vol.Required(CONF_HOST): cv.string,
+    vol.Optional(CONF_HOST,default=''): cv.string,
     vol.Required(CONF_DEVICE_ID): cv.string,
     vol.Required(CONF_LOCAL_KEY): cv.string,
     vol.Optional(CONF_ID, default=DEFAULT_ID): cv.string,
@@ -44,8 +44,8 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     outlet_device = TuyaCache(
         pytuya.OutletDevice(
             config.get(CONF_DEVICE_ID),
-            config.get(CONF_HOST),
-            config.get(CONF_LOCAL_KEY)
+            config.get(CONF_LOCAL_KEY),
+            config.get(CONF_HOST)
         )
     )
 
