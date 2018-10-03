@@ -130,15 +130,17 @@ class TuyaDevice(SwitchDevice):
     def turn_on(self, **kwargs):
         """Turn Tuya switch on."""
         self._device.set_status(True, self._switchid)
+        self._state = True
 
     def turn_off(self, **kwargs):
         """Turn Tuya switch off."""
         self._device.set_status(False, self._switchid)
+        self._state = False
 
     def update(self):
         """Get state of Tuya switch."""
-        status = self._device.status()
         try:
+            status = self._device.status()
             self._state = status['dps'][self._switchid]
         except:
             # ugly, lets use the optimistic approach to state if checking fails
