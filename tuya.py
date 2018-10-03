@@ -138,4 +138,9 @@ class TuyaDevice(SwitchDevice):
     def update(self):
         """Get state of Tuya switch."""
         status = self._device.status()
-        self._state = status['dps'][self._switchid]
+        try:
+            self._state = status['dps'][self._switchid]
+        except:
+            # ugly, lets use the optimistic approach to state if checking fails
+            pass
+
